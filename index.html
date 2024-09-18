@@ -1,6 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rabbit Cage</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <button onclick="goHome()">&#x1F3E0;</button> 
+        <span id="headerTitle">Rabbit Cage</span>
+        <button onclick="goToRabbitProfile()">&#x1F407;</button>
+    </header>
+
+    <div id="cageDetails">
+        <form id="rabbitForm" onsubmit="saveData(event)">
+            <div>
+                <label for="serialNumber">SERIAL NUMBER:</label>
+                <input type="text" id="serialNumber" name="serialNumber" required>
+            </div>
+            <div>
+                <label for="breed">BREED:</label>
+                <input type="text" id="breed" name="breed">
+            </div>
+            <div>
+                <label for="family">FAMILY:</label>
+                <input type="text" id="family" name="family">
+            </div>
+            <div>
+                <label for="birthDate">DATE OF BIRTH:</label>
+                <input type="date" id="birthDate" name="birthDate">
+            </div>
+            <div>
+                <label for="weight">WEIGHT:</label>
+                <input type="text" id="weight" name="weight">
+            </div>
+
+            <!-- Gender Section -->
+            <div>
+                <label for="gender">GENDER:</label>
+                <label><input type="radio" name="gender" value="male" onclick="togglePregnancy(false)"> MALE</label>
+                <label><input type="radio" name="gender" value="female" onclick="togglePregnancy(true)"> FEMALE</label>
+            </div>
+
+            <!-- Pregnant Option (only for Female) -->
+            <div id="pregnancyOption" style="display: none;">
+                <label>PREGNANT:</label>
+                <label><input type="radio" name="pregnant" value="yes" onclick="togglePregnancyDetails(true)"> YES</label>
+                <label><input type="radio" name="pregnant" value="no" onclick="togglePregnancyDetails(false)"> NO</label>
+            </div>
+
+            <!-- Pregnancy Details (shown if Pregnant is Yes) -->
+            <div id="pregnancyDetails" style="display: none;">
+                <div>
+                    <label for="matedRabbit">MATED RABBIT:</label>
+                    <input type="text" id="matedRabbit" name="matedRabbit">
+                </div>
+                <div>
+                    <label for="pregnancyStart">START OF PREGNANCY:</label>
+                    <input type="date" id="pregnancyStart" name="pregnancyStart">
+                </div>
+                <div>
+                    <label for="dueDate">DUE DATE OF PREGNANCY:</label>
+                    <input type="date" id="dueDate" name="dueDate">
+                </div>
+            </div>
+
+            <!-- Other Fields -->
+            <div>
+                <label for="foodIntake">FOOD INTAKE:</label>
+                <label><input type="radio" name="foodIntake" value="normal"> NORMAL</label>
+                <label><input type="radio" name="foodIntake" value="irregular"> IRREGULAR</label>
+            </div>
+            <div>
+                <label>ELIGIBLE FOR MATING:</label>
+                <label><input type="radio" name="mating" value="yes"> YES</label>
+                <label><input type="radio" name="mating" value="no"> NO</label>
+            </div>
+            <div>
+                <label for="note">NOTE:</label>
+                <textarea id="note" name="note"></textarea>
+            </div>
+
+            <div class="buttons">
+                <button type="submit">SUBMIT</button>
+                <button type="button" onclick="goHome()">CANCEL</button>
+                <button type="button" onclick="deleteCage()">DELETE CAGE</button> <!-- Delete Cage Button -->
+            </div>
+        </form>
+    </div>
+
+    <div id="homePage" class="cage-list" style="display: none;">
+        <button onclick="showCageDetails(1)">CAGE 1</button>
+        <button onclick="showCageDetails(2)">CAGE 2</button>
+        <button onclick="showCageDetails(3)">CAGE 3</button>
+        <button onclick="showCageDetails(4)">CAGE 4</button>
+        <button onclick="showCageDetails(5)">CAGE 5</button>
+        <button onclick="showCageDetails(6)">CAGE 6</button>
+        <button onclick="addNewCage()">ADD NEW CAGE</button> <!-- Add New Cage Button -->
+    </div>
+
 <script>
-    let totalCages = 6; // Static cages (initial)
-    let addedCages = []; // To track dynamically added cages with unique IDs
+    let totalCages = 6; // Keeps track of the total number of cages
+    let addedCages = []; // To track dynamically added cages
 
     function goHome() {
         document.getElementById('homePage').style.display = 'block';
@@ -79,56 +181,4 @@
         const data = new FormData(form);
         const params = new URLSearchParams();
         data.forEach((value, key) => {
-            params.append(key, value);
-        });
-        window.location.href = `rabbitinfo.html?cage=${cageNumber}&${params.toString()}`;
-    }
-
-    // Enhanced deleteCage function to correctly delete a specific cage
-    function deleteCage() {
-        const cageNumber = document.getElementById('rabbitForm').dataset.cageNumber;
-        if (confirm(`Are you sure you want to delete Cage ${cageNumber}?`)) {
-            // Remove cage data from localStorage
-            localStorage.removeItem(`rabbitData${cageNumber}`);
-
-            // Check if it's a dynamically added cage
-            const cageIndex = addedCages.findIndex(cage => cage === parseInt(cageNumber));
-            if (cageIndex !== -1) {
-                // Remove the corresponding button from the homePage
-                const homePage = document.getElementById('homePage');
-                const cageButton = homePage.querySelector(`button[data-cage="${cageNumber}"]`);
-                homePage.removeChild(cageButton);
-
-                // Remove from addedCages array
-                addedCages.splice(cageIndex, 1);
-            }
-
-            alert(`Cage ${cageNumber} has been deleted.`);
-            goHome();
-        }
-    }
-
-    // Enhanced addNewCage function to correctly track and add cages
-    function addNewCage() {
-        totalCages++;
-        addedCages.push(totalCages); // Track new cages
-
-        const homePage = document.getElementById('homePage');
-        const newCageButton = document.createElement('button');
-        newCageButton.textContent = `CAGE ${totalCages}`;
-        newCageButton.setAttribute('data-cage', totalCages); // Set unique cage data attribute
-        newCageButton.onclick = () => showCageDetails(totalCages);
-
-        // Insert new cage button before the last button (ADD NEW CAGE)
-        homePage.insertBefore(newCageButton, homePage.lastElementChild);
-    }
-
-    window.onload = function () {
-        let cageNumber = new URLSearchParams(window.location.search).get('cage');
-        if (cageNumber) {
-            showCageDetails(cageNumber);
-        } else {
-            goHome();
-        }
-    }
-</script>
+            params.append
